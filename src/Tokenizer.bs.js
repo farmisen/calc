@@ -3,8 +3,30 @@
 
 var Char = require("bs-platform/lib/js/char.js");
 var List = require("bs-platform/lib/js/list.js");
-var Pervasives = require("bs-platform/lib/js/pervasives.js");
 var Exploder$Calc = require("./Exploder.bs.js");
+
+function toString(token) {
+  if (typeof token !== "number") {
+    return "Number(" + (String(token._0) + ")");
+  }
+  switch (token) {
+    case /* Plus */0 :
+        return "Plus";
+    case /* Minus */1 :
+        return "Minus";
+    case /* Multiply */2 :
+        return "Multiply";
+    case /* Divide */3 :
+        return "Divide";
+    case /* OpenParens */4 :
+        return "OpenParens";
+    case /* CloseParens */5 :
+        return "CloseParens";
+    case /* EOF */6 :
+        return "EOF";
+    
+  }
+}
 
 function tokenize(input) {
   var _input = Exploder$Calc.explode(input);
@@ -15,10 +37,13 @@ function tokenize(input) {
     var current = _current;
     var input$1 = _input;
     if (!input$1) {
-      return List.rev(current !== undefined ? ({
-                      hd: current,
-                      tl: tokens
-                    }) : tokens);
+      return {
+              TAG: /* Ok */0,
+              _0: List.rev(current !== undefined ? ({
+                        hd: current,
+                        tl: tokens
+                      }) : tokens)
+            };
     }
     var match = input$1 ? [
         input$1.hd,
@@ -203,7 +228,10 @@ function tokenize(input) {
       }
       
     }
-    return Pervasives.failwith("unexpected character " + Char.escaped(head));
+    return {
+            TAG: /* Error */1,
+            _0: "unexpected character " + Char.escaped(head)
+          };
   };
 }
 
@@ -213,5 +241,6 @@ var zero = /* "0" */48;
 
 exports.eof = eof;
 exports.zero = zero;
+exports.toString = toString;
 exports.tokenize = tokenize;
 /* No side effect */

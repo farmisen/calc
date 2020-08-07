@@ -5,7 +5,7 @@
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
-    "test": "jest ./__tests__/*.js"
+    "test": "yarn build && jest ./__tests__"
   },
   "keywords": [
     "BuckleScript"
@@ -15,5 +15,10 @@
   "devDependencies": {
     "@glennsl/bs-jest": "^0.5.1",
     "bs-platform": "^8.2.0"
+  },
+  "jest": {
+    "roots": [
+      "__tests__/"
+    ]
   }
 }

@@ -5,20 +5,37 @@ type token =
   | Multiply
   | Divide
   | OpenParens
-  | CloseParens;
+  | CloseParens
+  | EOF;
 
 let eof = 26;
 let zero = Char.code('0');
+
+let toString = token =>
+  switch (token) {
+  | Number(value) => "Number(" ++ string_of_int(value) ++ ")"
+  | Plus => "Plus"
+  | Minus => "Minus"
+  | Multiply => "Multiply"
+  | Divide => "Divide"
+  | OpenParens => "OpenParens"
+  | CloseParens => "CloseParens"
+  | EOF => "EOF"
+  };
+
+open Belt.Result;
 
 let tokenize = input => {
   let rec doTokenize = (input, current, tokens) => {
     switch (input) {
     | [] =>
-      List.rev(
-        switch (current) {
-        | None => tokens
-        | Some(token) => [token, ...tokens]
-        },
+      Ok(
+        List.rev(
+          switch (current) {
+          | None => tokens
+          | Some(token) => [token, ...tokens]
+          },
+        ),
       )
     | _ =>
       let (head, tail) =
@@ -54,7 +71,7 @@ let tokenize = input => {
       | (Some(token), '(', t) => next(Some(OpenParens), [token, ...t])
       | (Some(token), ')', t) => next(Some(CloseParens), [token, ...t])
 
-      | (_, c, _) => failwith("unexpected character " ++ Char.escaped(c))
+      | (_, c, _) => Error("unexpected character " ++ Char.escaped(c))
       };
     };
   };
