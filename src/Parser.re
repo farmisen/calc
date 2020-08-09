@@ -6,12 +6,8 @@
 
 open Belt.Result;
 open Ast;
-exception ParsingError(string);
-open StringUtils;
 
-let tokensToString = tokens => {
-  tokens |> List.map(token => token |> Tokenizer.toString) |> join(", ");
-};
+exception ParsingError(string);
 
 let parse = tokens => {
   let rec doParse = tokens => {
@@ -68,11 +64,7 @@ let parse = tokens => {
     };
   };
 
-  try({
-    let result = doParse(tokens);
-    // Js.log(result |> toString);
-    Ok(result);
-  }) {
+  try(Ok(doParse(tokens))) {
   | ParsingError(msg) => Error(msg)
   };
 };

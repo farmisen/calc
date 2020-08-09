@@ -2,16 +2,10 @@
 'use strict';
 
 var List = require("bs-platform/lib/js/list.js");
-var Tokenizer$Calc = require("./Tokenizer.bs.js");
 var Caml_exceptions = require("bs-platform/lib/js/caml_exceptions.js");
-var StringUtils$Calc = require("./StringUtils.bs.js");
 var Caml_js_exceptions = require("bs-platform/lib/js/caml_js_exceptions.js");
 
 var ParsingError = Caml_exceptions.create("Parser-Calc.ParsingError");
-
-function tokensToString(tokens) {
-  return StringUtils$Calc.join(", ", List.map(Tokenizer$Calc.toString, tokens));
-}
 
 function parse(tokens) {
   var doParse = function (tokens) {
@@ -210,10 +204,9 @@ function parse(tokens) {
     }
   };
   try {
-    var result = doParse(tokens);
     return {
             TAG: /* Ok */0,
-            _0: result
+            _0: doParse(tokens)
           };
   }
   catch (raw_msg){
@@ -229,6 +222,5 @@ function parse(tokens) {
 }
 
 exports.ParsingError = ParsingError;
-exports.tokensToString = tokensToString;
 exports.parse = parse;
 /* No side effect */

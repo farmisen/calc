@@ -7,28 +7,6 @@ var Parser$Calc = require("../src/Parser.bs.js");
 var Tokenizer$Calc = require("../src/Tokenizer.bs.js");
 
 Jest.describe("parse", (function (param) {
-        Jest.test("empty", (function (param) {
-                var tokens = Tokenizer$Calc.tokenize("");
-                if (tokens.TAG) {
-                  return Pervasives.failwith(tokens._0);
-                } else {
-                  return Jest.Expect.toEqual({
-                              TAG: /* Ok */0,
-                              _0: /* Empty */0
-                            }, Jest.Expect.expect(Parser$Calc.parse(tokens._0)));
-                }
-              }));
-        Jest.test("space", (function (param) {
-                var tokens = Tokenizer$Calc.tokenize(" ");
-                if (tokens.TAG) {
-                  return Pervasives.failwith(tokens._0);
-                } else {
-                  return Jest.Expect.toEqual({
-                              TAG: /* Ok */0,
-                              _0: /* Empty */0
-                            }, Jest.Expect.expect(Parser$Calc.parse(tokens._0)));
-                }
-              }));
         Jest.test("number", (function (param) {
                 var tokens = Tokenizer$Calc.tokenize("123");
                 if (tokens.TAG) {
@@ -266,7 +244,7 @@ Jest.describe("parse", (function (param) {
                             }, Jest.Expect.expect(Parser$Calc.parse(tokens._0)));
                 }
               }));
-        return Jest.Only.test("nested", (function (param) {
+        return Jest.test("nested", (function (param) {
                       var tokens = Tokenizer$Calc.tokenize("(1 + (2 - 3)) * 4");
                       if (tokens.TAG) {
                         return Pervasives.failwith(tokens._0);

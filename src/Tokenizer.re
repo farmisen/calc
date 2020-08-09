@@ -25,8 +25,12 @@ let toString = token =>
 
 open Belt.Result;
 
+let tokensToString = tokens => {
+  tokens |> List.map(token => token |> toString) |> StringUtils.join(", ");
+};
+
 let tokenize = input => {
-  let rec doTokenize = (input, current, tokens) => {
+  let rec doTokenize = (current, tokens, input) => {
     switch (input) {
     | [] =>
       Ok(
@@ -43,38 +47,37 @@ let tokenize = input => {
         | [h, ...t] => (h, t)
         | [] => (' ', [])
         };
-      let next = doTokenize(tail);
-      switch (current, head, tokens) {
-      /* State: None */
-      | (None, ' ', t) => next(None, t)
-      | (None, '0'..'9' as c, t) =>
-        next(Some(Number(Char.code(c) - zero)), t)
-      | (None, '+', t) => next(Some(Plus), t)
-      | (None, '-', t) => next(Some(Minus), t)
-      | (None, '*', t) => next(Some(Multiply), t)
-      | (None, '/', t) => next(Some(Divide), t)
-      | (None, '(', t) => next(Some(OpenParens), t)
-      | (None, ')', t) => next(Some(CloseParens), t)
 
+      let next = (current, value) => {
+        doTokenize(
+          value,
+          switch (current) {
+          | None => tokens
+          | Some(token) => [token, ...tokens]
+          },
+          tail,
+        );
+      };
+
+      switch (current, head) {
       /* State: Number */
-      | (Some(Number(n)), '0'..'9' as c, t) =>
-        next(Some(Number(n * 10 + Char.code(c) - zero)), t)
+      | (Some(Number(n)), '0'..'9' as c) =>
+        next(None, Some(Number(n * 10 + Char.code(c) - zero)))
 
-      /* State: Some(token) */
-      | (Some(token), ' ', t) => next(None, [token, ...t])
-      | (Some(token), '0'..'9' as c, t) =>
-        next(Some(Number(Char.code(c) - zero)), [token, ...t])
-      | (Some(token), '+', t) => next(Some(Plus), [token, ...t])
-      | (Some(token), '-', t) => next(Some(Minus), [token, ...t])
-      | (Some(token), '*', t) => next(Some(Multiply), [token, ...t])
-      | (Some(token), '/', t) => next(Some(Divide), [token, ...t])
-      | (Some(token), '(', t) => next(Some(OpenParens), [token, ...t])
-      | (Some(token), ')', t) => next(Some(CloseParens), [token, ...t])
+      | (_, ' ') => next(current, None)
+      | (_, '0'..'9' as c) =>
+        next(current, Some(Number(Char.code(c) - zero)))
+      | (_, '+') => next(current, Some(Plus))
+      | (_, '-') => next(current, Some(Minus))
+      | (_, '*') => next(current, Some(Multiply))
+      | (_, '/') => next(current, Some(Divide))
+      | (_, '(') => next(current, Some(OpenParens))
+      | (_, ')') => next(current, Some(CloseParens))
 
-      | (_, c, _) => Error("unexpected character " ++ Char.escaped(c))
+      | (_, c) => Error("unexpected character " ++ Char.escaped(c))
       };
     };
   };
 
-  Exploder.explode(input)->doTokenize(None, []);
+  Exploder.explode(input) |> doTokenize(None, []);
 };

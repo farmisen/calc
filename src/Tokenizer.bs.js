@@ -4,6 +4,7 @@
 var Char = require("bs-platform/lib/js/char.js");
 var List = require("bs-platform/lib/js/list.js");
 var Exploder$Calc = require("./Exploder.bs.js");
+var StringUtils$Calc = require("./StringUtils.bs.js");
 
 function toString(token) {
   if (typeof token !== "number") {
@@ -28,15 +29,13 @@ function toString(token) {
   }
 }
 
+function tokensToString(tokens) {
+  return StringUtils$Calc.join(", ", List.map(toString, tokens));
+}
+
 function tokenize(input) {
-  var _input = Exploder$Calc.explode(input);
-  var _current;
-  var _tokens = /* [] */0;
-  while(true) {
-    var tokens = _tokens;
-    var current = _current;
-    var input$1 = _input;
-    if (!input$1) {
+  var doTokenize = function (current, tokens, input) {
+    if (!input) {
       return {
               TAG: /* Ok */0,
               _0: List.rev(current !== undefined ? ({
@@ -45,151 +44,47 @@ function tokenize(input) {
                       }) : tokens)
             };
     }
-    var match = input$1 ? [
-        input$1.hd,
-        input$1.tl
+    var match = input ? [
+        input.hd,
+        input.tl
       ] : [
         /* " " */32,
         /* [] */0
       ];
     var tail = match[1];
     var head = match[0];
-    if (current !== undefined) {
-      var exit = 0;
-      if (typeof current === "number" || head > 57 || head < 48) {
-        exit = 2;
-      } else {
-        _current = /* Number */{
-          _0: (Math.imul(current._0, 10) + head | 0) - /* "0" */48 | 0
-        };
-        _input = tail;
-        continue ;
+    var next = function (current, value) {
+      return doTokenize(value, current !== undefined ? ({
+                      hd: current,
+                      tl: tokens
+                    }) : tokens, tail);
+    };
+    var exit = 0;
+    if (current !== undefined && typeof current !== "number") {
+      if (!(head > 57 || head < 48)) {
+        return next(undefined, /* Number */{
+                    _0: (Math.imul(current._0, 10) + head | 0) - /* "0" */48 | 0
+                  });
       }
-      if (exit === 2) {
-        var exit$1 = 0;
-        switch (head) {
-          case 32 :
-              _tokens = {
-                hd: current,
-                tl: tokens
-              };
-              _current = undefined;
-              _input = tail;
-              continue ;
-          case 40 :
-              _tokens = {
-                hd: current,
-                tl: tokens
-              };
-              _current = /* OpenParens */4;
-              _input = tail;
-              continue ;
-          case 41 :
-              _tokens = {
-                hd: current,
-                tl: tokens
-              };
-              _current = /* CloseParens */5;
-              _input = tail;
-              continue ;
-          case 42 :
-              _tokens = {
-                hd: current,
-                tl: tokens
-              };
-              _current = /* Multiply */2;
-              _input = tail;
-              continue ;
-          case 43 :
-              _tokens = {
-                hd: current,
-                tl: tokens
-              };
-              _current = /* Plus */0;
-              _input = tail;
-              continue ;
-          case 45 :
-              _tokens = {
-                hd: current,
-                tl: tokens
-              };
-              _current = /* Minus */1;
-              _input = tail;
-              continue ;
-          case 33 :
-          case 34 :
-          case 35 :
-          case 36 :
-          case 37 :
-          case 38 :
-          case 39 :
-          case 44 :
-          case 46 :
-              break;
-          case 47 :
-              _tokens = {
-                hd: current,
-                tl: tokens
-              };
-              _current = /* Divide */3;
-              _input = tail;
-              continue ;
-          case 48 :
-          case 49 :
-          case 50 :
-          case 51 :
-          case 52 :
-          case 53 :
-          case 54 :
-          case 55 :
-          case 56 :
-          case 57 :
-              exit$1 = 3;
-              break;
-          default:
-            
-        }
-        if (exit$1 === 3) {
-          _tokens = {
-            hd: current,
-            tl: tokens
-          };
-          _current = /* Number */{
-            _0: head - /* "0" */48 | 0
-          };
-          _input = tail;
-          continue ;
-        }
-        
-      }
-      
+      exit = 1;
     } else {
-      var exit$2 = 0;
+      exit = 1;
+    }
+    if (exit === 1) {
+      var exit$1 = 0;
       switch (head) {
         case 32 :
-            _current = undefined;
-            _input = tail;
-            continue ;
+            return next(current, undefined);
         case 40 :
-            _current = /* OpenParens */4;
-            _input = tail;
-            continue ;
+            return next(current, /* OpenParens */4);
         case 41 :
-            _current = /* CloseParens */5;
-            _input = tail;
-            continue ;
+            return next(current, /* CloseParens */5);
         case 42 :
-            _current = /* Multiply */2;
-            _input = tail;
-            continue ;
+            return next(current, /* Multiply */2);
         case 43 :
-            _current = /* Plus */0;
-            _input = tail;
-            continue ;
+            return next(current, /* Plus */0);
         case 45 :
-            _current = /* Minus */1;
-            _input = tail;
-            continue ;
+            return next(current, /* Minus */1);
         case 33 :
         case 34 :
         case 35 :
@@ -199,11 +94,10 @@ function tokenize(input) {
         case 39 :
         case 44 :
         case 46 :
+            exit$1 = 2;
             break;
         case 47 :
-            _current = /* Divide */3;
-            _input = tail;
-            continue ;
+            return next(current, /* Divide */3);
         case 48 :
         case 49 :
         case 50 :
@@ -214,25 +108,27 @@ function tokenize(input) {
         case 55 :
         case 56 :
         case 57 :
-            exit$2 = 2;
+            exit$1 = 3;
             break;
         default:
-          
+          exit$1 = 2;
       }
-      if (exit$2 === 2) {
-        _current = /* Number */{
-          _0: head - /* "0" */48 | 0
-        };
-        _input = tail;
-        continue ;
+      switch (exit$1) {
+        case 2 :
+            return {
+                    TAG: /* Error */1,
+                    _0: "unexpected character " + Char.escaped(head)
+                  };
+        case 3 :
+            return next(current, /* Number */{
+                        _0: head - /* "0" */48 | 0
+                      });
+        
       }
-      
     }
-    return {
-            TAG: /* Error */1,
-            _0: "unexpected character " + Char.escaped(head)
-          };
+    
   };
+  return doTokenize(undefined, /* [] */0, Exploder$Calc.explode(input));
 }
 
 var eof = 26;
@@ -242,5 +138,6 @@ var zero = /* "0" */48;
 exports.eof = eof;
 exports.zero = zero;
 exports.toString = toString;
+exports.tokensToString = tokensToString;
 exports.tokenize = tokenize;
 /* No side effect */

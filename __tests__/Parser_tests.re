@@ -5,19 +5,6 @@ open Belt.Result;
 
 describe("parse", () => {
   open Expect;
-  test("empty", () => {
-    switch (Tokenizer.tokenize("")) {
-    | Ok(tokens) => expect(tokens |> parse) |> toEqual(Ok(Empty))
-    | Error(err) => failwith(err)
-    }
-  });
-
-  test("space", () => {
-    switch (Tokenizer.tokenize(" ")) {
-    | Ok(tokens) => expect(tokens |> parse) |> toEqual(Ok(Empty))
-    | Error(err) => failwith(err)
-    }
-  });
 
   test("number", () => {
     switch (Tokenizer.tokenize("123")) {
@@ -163,7 +150,7 @@ describe("parse", () => {
     }
   });
 
-  Only.test("nested", () => {
+  test("nested", () => {
     switch (Tokenizer.tokenize("(1 + (2 - 3)) * 4")) {
     | Ok(tokens) =>
       expect(tokens |> parse)
