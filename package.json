@@ -20,5 +20,8 @@
     "roots": [
       "__tests__/"
     ]
+  },
+  "dependencies": {
+    "enquirer": "^2.3.6"
   }
 }
